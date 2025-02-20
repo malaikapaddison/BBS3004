@@ -1,0 +1,57 @@
+# First check if some necessary packages are installed and loaded
+# This is similar to Python code that reads (i.e) "import numpy as np"
+if(!"rstudioapi" %in% installed.packages()){
+    install.packages("rstudioapi")
+}
+library(rstudioapi)
+
+# SET WORKING DIRECTORY TO CURRENT SCRIPT DIRECTORY
+# Make sure this script is in the same folder as your downloaded file
+DATA.DIR <- dirname(rstudioapi::getActiveDocumentContext()$path)
+setwd(DATA.DIR)
+
+# Change the file name to your designated GWAS results file from the Catalog
+mygwas <- read.table("catalog_digitspan_ukb.tsv", header = T, sep = "\t")
+
+# Check the column names, and change them to some shorter versions
+# We also don't need every column, so we'll go ahead and remove some
+colnames(mygwas)
+
+# We wan't chromosome, location, effect and other allele, beta, effect frequency, p-value, ID
+mygwas <- mygwas[,c(1:5,7:9)]
+# We could have also done mygwas <- mygwas[,-c(6,10)]
+
+# Now check the new columns and make sure they are complete, then rename them
+colnames(mygwas)
+colnames(mygwas) <- c("chr", "loc", "a1", "a2", "b", "a1f", "p", "rsid")
+colnames(mygwas)
+
+# In the top right corner, your environment variables show all your loaded variables, tables etc.
+# Click on the 'mygwas' table, have a look
+# The next line of code orders pvalues from most to least significant
+# You can also do this by just clicking the pvalue column when viewing the table
+mygwas <- mygwas[order(mygwas$p),]
+View(mygwas)
+
+# Just to be sure, check whetehr all the MAF are filtered the way you want them to be
+min(mygwas$a1f)
+max(mygwas$a1f)
+
+# If you wan't or need to filter on higher allele frequency
+# Uncomment (remove hashtag, or use ctrl+shift+c) next two lines and adapt frequency (0.05) to whatever suits
+# mygwas <- mygwas[mygwas$a1f>0.05,]
+# mygwas <- mygwas[mygwas$a1f<0.95,]
+
+# We don't really need the allele frequency anymore now
+# So we can remove it
+mygwas <- mygwas[,-6]
+
+# Save the file, so you can send it to FUMA
+# You may need to compress it (zip) for FUMA because of the maximum file size
+write.table(mygwas[,c(1:7)],"mygwas_processed.txt", col.names = T, row.names = F, quote = F, sep = "\t")
+
+
+
+
+
+
